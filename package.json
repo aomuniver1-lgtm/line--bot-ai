@@ -1,0 +1,13 @@
+{
+  "name": "line-bot-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "*",
+    "@google/genai": "*"
+  }
+}
