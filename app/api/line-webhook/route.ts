@@ -29,11 +29,13 @@ async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GOOGLE_API_KEY not configured');
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta2/models/gemini-2.5-flash:generate';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
   const body = {
-    prompt: { text: prompt },
-    temperature: 0.2,
-    maxOutputTokens: 512
+    contents: [
+      {
+        parts: [{ text: prompt }]
+      }
+    ]
   };
 
   const res = await fetch(url, {
@@ -52,9 +54,24 @@ async function callGemini(prompt: string): Promise<string> {
 
   const data = await res.json();
 
-  // Extract text from possible response shapes
+  // Preferred path: data.candidates[0].content.parts[0].text
   let reply = '';
-  if (Array.isArray(data?.candidates) && data.candidates.length) {
+  if (data?.candidates && Array.isArray(data.candidates) && data.candidates.length) {
+    try {
+      const cand = data.candidates[0];
+      if (cand?.content && Array.isArray(cand.content) && cand.content.length) {
+        const parts = cand.content[0]?.parts;
+        if (parts && Array.isArray(parts) && parts.length && typeof parts[0].text === 'string') {
+          reply = parts[0].text;
+        }
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+  }
+
+  // Fallbacks for older shapes
+  if (!reply && Array.isArray(data?.candidates) && data.candidates.length) {
     reply = data.candidates.map((c: any) => c.output || (c.content || []).map((p: any) => p.text || '').join('')).join('\n');
   }
   if (!reply && Array.isArray(data?.output) && data.output.length && Array.isArray(data.output[0].content)) {
