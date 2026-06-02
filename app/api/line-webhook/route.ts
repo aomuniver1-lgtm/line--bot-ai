@@ -27,7 +27,7 @@ async function fetchFaqCsv(): Promise<string> {
 
 async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GOOGLE_API_KEY not configured');
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
   const body = {
